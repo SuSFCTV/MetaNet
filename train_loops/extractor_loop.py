@@ -1,5 +1,5 @@
 import os
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm, trange
 
 import torch
 import torch.nn as nn
@@ -13,65 +13,6 @@ import matplotlib.pyplot as plt
 import time
 
 
-class Identity(nn.Module):
-    def __init__(self):
-        super(Identity, self).__init__()
-
-    def forward(self, x):
-        return x
-
-
-class ParallelNet(nn.Module):
-    def __init__(self, num_classes: int = 2, dropout: float = 0.5) -> None:
-        super().__init__()
-        self.model_pretrained = models.alexnet(pretrained=True)
-        self.model_pretrained.classifier = Identity()  # костыль
-        for param in self.model_pretrained.parameters():  # замораживаю веса предобученной модели
-            param.requires_grad = False
-        self.features = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(64, 192, kernel_size=5, padding=2),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(192, 384, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(384, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-        )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
-        self.classifier = nn.Sequential(
-            nn.Dropout(p=dropout),
-            nn.Linear(18432, 128),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=dropout),
-            nn.Linear(128, 32),
-            nn.ReLU(inplace=True),
-            nn.Linear(32, num_classes),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-
-        x_2 = self.model_pretrained(x.clone())
-
-        x_1 = self.features(x.clone())
-        x_1 = self.avgpool(x_1)
-
-        x_1 = torch.flatten(x_1, 1)
-
-        x_1 = torch.cat((x_1, x_2), 1)
-
-        x_1 = self.classifier(x_1)
-
-        #x_1 = x_1.view(4, 4)
-
-        return x_1
-
-
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
@@ -81,7 +22,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     # Ваш код здесь
     losses = {'train': [], "val": []}
 
-    pbar = tqdm(range(num_epochs), desc="Epoch:")
+    pbar = trange(num_epochs, desc="Epoch:")
 
     for epoch in pbar:
 
@@ -156,6 +97,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
 
 if __name__ == "__main__":
+    model_extractor = models.alexnet(pretrained=True)
+
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomResizedCrop(244),
@@ -170,7 +113,6 @@ if __name__ == "__main__":
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-
     data_dir = './data'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                               data_transforms[x])
@@ -184,10 +126,26 @@ if __name__ == "__main__":
 
     use_gpu = torch.cuda.is_available()
 
+    # замораживаем параметры (веса)
+    for param in model_extractor.parameters():
+        param.requires_grad = False
+
+    # num_features -- это размерность вектора фич, поступающего на вход FC-слою
+    num_features = 9216
+    # Заменяем Fully-Connected слой на наш линейный классификатор
+    model_extractor.classifier = nn.Linear(num_features, 2)
+
+    # Использовать ли GPU
+    if use_gpu:
+        model_extractor = model_extractor.cuda()
+
+    # В качестве cost function используем кросс-энтропию
     loss_fn = nn.CrossEntropyLoss()
-    optimizer_ft = optim.Adam(ParallelNet().parameters(), lr=1e-4)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
-    parallel_net = ParallelNet()
+    # Обучаем только классификатор
+    optimizer = optim.Adam(model_extractor.classifier.parameters(), lr=1e-4)
 
-    model_parallel, losses = train_model(parallel_net, loss_fn, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+    # Умножает learning_rate на 0.1 каждые 7 эпох (это одна из эвристик, не было на лекциях)
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+    model_extractor, losses = train_model(model_extractor, loss_fn, optimizer, exp_lr_scheduler, num_epochs=25)
