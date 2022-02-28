@@ -7,7 +7,8 @@ __pycache__/
 *.so
 
 #data
-*data
+models/parallel_net/data
+models/meta_extractor/data
 *.idea
 *.pyc
 
