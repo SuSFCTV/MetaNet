@@ -8,4 +8,4 @@ def plotting(losses):
     plt.plot(losses['train'], label="train")
     plt.plot(losses['val'], label="val")
     plt.legend()
-    plt.savefig('result.png')
+    plt.savefig('result_parallel.png')
