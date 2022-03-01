@@ -1,4 +1,4 @@
-import class_identity
+from models.parallel_net.class_identity import Identity
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -8,7 +8,7 @@ class ParallelNet(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.model_pretrained = models.resnet18(pretrained=True)
-        self.model_pretrained.fc = class_identity.Identity()  # костыль
+        self.model_pretrained.fc = Identity()  # костыль
         for param in self.model_pretrained.parameters():  # замораживаю веса предобученной модели
             param.requires_grad = False
         self.features = nn.Sequential(
