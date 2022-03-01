@@ -12,8 +12,14 @@ I came up with three different models. I will tell you more about each of them:
 
    The pre-trained resnet18, which we freeze the encoder layers and remove the gradient calculation from them. At the output of the encoder, we have a vector of meta-information that is fed to the classifier input.
 3. Model with two parallel encoders which i called "ParallelNet".
-   
-   
+
+   ![ParallelNet](https://github.com/SuSFCTV/MetaNet/blob/dev/docs/parallel_net.png)
+
+   A picture is fed to the input, which goes to two encoders. The first one is a small CNN with a low number of parameters. The output will be a vector.
+
+   The second one is a pre-trained model, from which I removed the classifier and froze the weights. At the output, I get a meta-information vector. 
+
+   Then these two vectors are concatenated and fed to the classifier as input.
 ## How to run an experiment
 It uses a configurable script to start the pipeline of data processing and training
 
