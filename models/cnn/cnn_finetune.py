@@ -10,5 +10,5 @@ class Cnn(nn.Module):
         self.model_finetune.fc = nn.Linear(512, 2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.model_extractor(x)
+        x = self.model_finetune(x)
         return x

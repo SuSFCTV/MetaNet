@@ -23,7 +23,7 @@ I came up with three different models. I will tell you more about each of them:
 ## How to run an experiment
 It uses a configurable script to start the pipeline of data processing and training
 
-You must write the name of the selected model in the configurator.
+You must write the name of the selected model in the **main.py** configurator.
 You can choose 3 types of models: "cnn", "meta_extractor", "parallel_net"
 
 ```bash
@@ -31,5 +31,7 @@ You can choose 3 types of models: "cnn", "meta_extractor", "parallel_net"
 ```
 ## Results
 Meta-extractor : best val accuracy = 0.85
-
+Fine-tune model : best val accuracy = 0.88
 ParallelNet : best val accuracy = 0.92
+
+**Based on the results, it can be concluded that the use of images and meta-information at the same time has a good effect on the result**
