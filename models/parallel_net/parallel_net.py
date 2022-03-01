@@ -3,12 +3,20 @@ import torch
 import torch.nn as nn
 from torchvision import models
 
+"""
+        Receives an input image, which is fed into two encoders, 
+        from which two vectors come out. 
+        These two vectors are concatenated and then fed into the classifier.
+        First encoder - resnet18 
+        Second encoder - simple cnn with low number parameteres
+"""
+
 
 class ParallelNet(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.model_pretrained = models.resnet18(pretrained=True)
-        self.model_pretrained.fc = Identity()  # костыль
+        self.model_pretrained.fc = Identity()  # Да, я знаю, что это костыль, но по-другому убрать слой не получилось :(
         for param in self.model_pretrained.parameters():  # замораживаю веса предобученной модели
             param.requires_grad = False
         self.features = nn.Sequential(

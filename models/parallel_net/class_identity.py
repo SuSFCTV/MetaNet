@@ -1,4 +1,9 @@
+import torch
 import torch.nn as nn
+
+"""
+Crutch class for layer replacement
+"""
 
 
 class Identity(nn.Module):
@@ -6,5 +11,5 @@ class Identity(nn.Module):
         super(Identity, self).__init__()
 
     @staticmethod
-    def forward(x):
+    def forward(x: torch.Tensor) -> torch.Tensor:
         return x

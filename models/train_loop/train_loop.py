@@ -3,37 +3,33 @@ import time
 import torch
 
 
-def train_model(model, criterion, optimizer, scheduler, dataloaders, dataset_sizes, num_epochs=25,
-                use_gpu=torch.cuda.is_available()):
+def train_model(model, criterion, optimizer, scheduler, dataloaders: dict, dataset_sizes: dict, num_epochs: int = 25,
+                use_gpu=torch.cuda.is_available()) -> tuple[dict, dict[str, list]]:
     since = time.time()
 
     best_model_wts = model.state_dict()
     best_acc = 0.0
 
-    # Ваш код здесь
     losses = {'train': [], "val": []}
 
     pbar = tqdm(range(num_epochs), desc="Epoch:")
 
     for epoch in pbar:
 
-        # каждя эпоха имеет обучающую и тестовую стадии
         for phase in ['train', 'val']:
             if phase == 'train':
                 scheduler.step()
-                model.train(True)  # установаить модель в режим обучения
+                model.train(True)
             else:
                 model.eval()
 
             running_loss = 0.0
             running_corrects = 0
 
-            # итерируемся по батчам
             for data in tqdm(dataloaders[phase], leave=False, desc=f"{phase} iter:"):
                 # получаем картинки и метки
                 inputs, labels = data
 
-                # оборачиваем в переменные
                 if use_gpu:
                     inputs = inputs.cuda()
                     labels = labels.cuda()
@@ -65,7 +61,6 @@ def train_model(model, criterion, optimizer, scheduler, dataloaders, dataset_siz
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects / dataset_sizes[phase]
 
-            # Ваш код здесь
             losses[phase].append(epoch_loss)
 
             pbar.set_description('{} Loss: {:.4f} Acc: {:.4f}'.format(

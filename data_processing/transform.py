@@ -1,9 +1,13 @@
 import os
+
 import torch
 from torchvision import transforms, datasets
 
 
-def data_transform():
+def data_transform() -> tuple[dict, dict, dict]:
+    """
+    Getting data, transform data and getting dataloader
+    """
     data_transforms = {
         'train': transforms.Compose([
             transforms.RandomResizedCrop(244),

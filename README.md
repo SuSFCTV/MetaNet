@@ -20,6 +20,8 @@ I came up with three different models. I will tell you more about each of them:
    The second one is a pre-trained model, from which I removed the classifier and froze the weights. At the output, I get a meta-information vector. 
 
    Then these two vectors are concatenated and fed to the classifier as input.
+## Metrics
+   I used the **accuracy** metric because we have the same number of images in both classes in the validation and training data.
 ## How to run an experiment
 It uses a configurable script to start the pipeline of data processing and training
 
