@@ -11,6 +11,7 @@ models/parallel_net/data
 models/meta_extractor/data
 data_processing/data
 data
+idea
 *.idea
 *.pyc
 
