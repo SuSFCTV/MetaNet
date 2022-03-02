@@ -40,7 +40,6 @@ You can choose 3 types of models: "cnn", "meta_extractor", "parallel_net"
 ```
 ## Results
 You can check the loss graphs here:
-
 [link](https://github.com/SuSFCTV/MetaNet/tree/main/results)
 
 
