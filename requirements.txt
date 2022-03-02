@@ -2,3 +2,7 @@ torch>=0.4.0
 torchvision
 numpy
 tqdm
+seaborn
+matplotlib
+os
+argparse
